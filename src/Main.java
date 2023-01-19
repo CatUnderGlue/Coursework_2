@@ -42,32 +42,15 @@ public class Main {
 
     private static void inputTask() {
         try {
+            // Получаем данные для создания задачи
             String title = getTitle();
             String description = getDescription();
             int taskType = getTaskType();
             Task.Type type = taskType == 1 ? Task.Type.WORK : Task.Type.PERSONAL;
             int repeatType = getRepeatType();
             LocalDateTime dateTime = getDayOfCompletion();
-
-            Task task = null;
-
-            switch (repeatType) {
-                case 1:
-                    task = new OneTimeTask(title, description, type, dateTime);
-                    break;
-                case 2:
-                    task = new DailyTask(title, description, type, dateTime);
-                    break;
-                case 3:
-                    task = new WeeklyTask(title, description, type, dateTime);
-                    break;
-                case 4:
-                    task = new MonthlyTask(title, description, type, dateTime);
-                    break;
-                case 5:
-                    task = new YearlyTask(title, description, type, dateTime);
-                    break;
-            }
+            // Создаём задачу
+            Task task = taskService.createTask(title, description, type, dateTime, repeatType);
             taskService.addTask(task);
             System.out.println("Задача успешно добавлена!");
             System.out.println(task);
@@ -88,16 +71,16 @@ public class Main {
         }
     }
 
-    private static void printAllTasksPerDay(){
+    private static void printAllTasksPerDay() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         System.out.print("Введите дату для получения задач в формате 2022-12-31: ");
         String dayOfCompletion = sc.next();
-        if (!checkDayValidity(dayOfCompletion)){
+        if (!checkDayValidity(dayOfCompletion)) {
             printAllTasksPerDay();
         }
         LocalDateTime date = LocalDateTime.parse(dayOfCompletion + " 23:59", formatter);
         List<Task> tasks = taskService.getAllByDate(date);
-        if (tasks.isEmpty()){
+        if (tasks.isEmpty()) {
             System.out.println("Задачи на указанный день не найдены.");
         } else {
             for (Task task : tasks) {
@@ -107,42 +90,38 @@ public class Main {
     }
 
     public static String getTitle() {
-        System.out.print("Введите название задачи: ");
-        String title = sc.nextLine();
-        if (title == null || title.isEmpty() || title.isBlank()) {
-            System.out.println("Введите корректное название задачи!");
-            getTitle();
-        }
+        String title;
+        do {
+            System.out.print("Введите название задачи: ");
+            title = sc.nextLine();
+        } while (title == null || title.isEmpty() || title.isBlank());
         return title;
     }
 
     public static String getDescription() {
-        System.out.print("Введите описание задачи: ");
-        String description = sc.nextLine();
-        if (description == null || description.isEmpty() || description.isBlank()) {
-            System.out.println("Введите корректное описание задачи!");
-            getDescription();
-        }
+        String description;
+        do {
+            System.out.print("Введите описание задачи: ");
+            description = sc.nextLine();
+        } while (description == null || description.isEmpty() || description.isBlank());
         return description;
     }
 
     public static int getTaskType() {
-        System.out.print("Выберите тип задачи 1 - Рабочая, 2 - Личная : ");
-        int taskType = sc.nextInt();
-        if (taskType > 2 || taskType < 1) {
-            System.out.println("Выберите тип задачи из представленных выше!");
-            getTaskType();
-        }
+        int taskType;
+        do {
+            System.out.print("Выберите тип задачи 1 - Рабочая, 2 - Личная : ");
+            taskType = sc.nextInt();
+        } while (taskType > 2 || taskType < 1);
         return taskType;
     }
 
     public static int getRepeatType() {
-        System.out.print("Выберите повторяемость задачи 1 - Одноразовая, 2 - Ежедневная, 3 - Еженедельная, 4 - Ежемесячная, 5 - Ежегодная: ");
-        int repeatType = sc.nextInt();
-        if (repeatType > 5 || repeatType < 1) {
-            System.out.println("Выберите повторяемость задачи из представленных выше!");
-            getRepeatType();
-        }
+        int repeatType;
+        do {
+            System.out.print("Выберите повторяемость задачи 1 - Одноразовая, 2 - Ежедневная, 3 - Еженедельная, 4 - Ежемесячная, 5 - Ежегодная: ");
+            repeatType = sc.nextInt();
+        } while (repeatType > 5 || repeatType < 1);
         return repeatType;
     }
 
@@ -151,7 +130,8 @@ public class Main {
         LocalTime time = getTime();
         return LocalDateTime.of(day, time);
     }
-    public static LocalDate getDay(){
+
+    public static LocalDate getDay() {
         String dayOfCompletion;
         do {
             System.out.print("Введите дату выполнения в формате 2022-12-31: ");
@@ -159,7 +139,8 @@ public class Main {
         } while (!checkDayValidity(dayOfCompletion));
         return LocalDate.parse(dayOfCompletion);
     }
-    public static LocalTime getTime(){
+
+    public static LocalTime getTime() {
         String timeOfCompletion;
         do {
             System.out.print("Введите время выполнения в формате 23:59: ");
@@ -179,6 +160,7 @@ public class Main {
         }
         return flag;
     }
+
     private static boolean checkTimeValidity(String time) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
         boolean flag = false;

@@ -1,5 +1,5 @@
 import Exceptions.IncorrectArgumentException;
-import Tasks.Task;
+import Tasks.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,6 +10,23 @@ public class TaskService {
     private ArrayList<Task> removedTasks = new ArrayList<>();
 
     public TaskService() {
+    }
+
+    public Task createTask(String title, String description, Task.Type type, LocalDateTime dateTime, int repeatType) throws IncorrectArgumentException {
+        switch (repeatType) {
+            case 1:
+                return new OneTimeTask(title, description, type, dateTime);
+            case 2:
+                return new DailyTask(title, description, type, dateTime);
+            case 3:
+                return new WeeklyTask(title, description, type, dateTime);
+            case 4:
+                return new MonthlyTask(title, description, type, dateTime);
+            case 5:
+                return new YearlyTask(title, description, type, dateTime);
+            default:
+                return null;
+        }
     }
 
     public void addTask(Task task){
