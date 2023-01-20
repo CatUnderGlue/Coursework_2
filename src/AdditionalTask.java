@@ -4,7 +4,11 @@ import java.util.stream.Collectors;
 public class AdditionalTask {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+<<<<<<< HEAD
         System.out.println("Введите текст:");
+=======
+        System.out.println("Введите строку с текстом:");
+>>>>>>> origin/solution
         String text = sc.nextLine().replaceAll("\\p{Punct}", "").toLowerCase().strip();
         printInfo(getWordsList(text));
     }
