@@ -1,9 +1,9 @@
 import Exceptions.IncorrectArgumentException;
 import Tasks.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class TaskService {
     private HashMap<Integer, Task> taskMap = new HashMap<>();
@@ -29,7 +29,7 @@ public class TaskService {
         }
     }
 
-    public void addTask(Task task){
+    public void addTask(Task task) {
         taskMap.put(task.getId(), task);
     }
 
@@ -42,13 +42,38 @@ public class TaskService {
         }
     }
 
-    public ArrayList<Task> getAllByDate(LocalDateTime dateTime){
+    public Task getTaskPerId(int id) throws IncorrectArgumentException {
+        if (taskMap.containsKey(id)) {
+            return taskMap.get(id);
+        } else {
+            throw new IncorrectArgumentException("Задача под заданным номером отсутствует");
+        }
+    }
+
+    public ArrayList<Task> getAllTasksByDate(LocalDateTime dateTime) {
         ArrayList<Task> tasks = new ArrayList<>();
-        for (Task task : taskMap.values()){
-            if (task.appearsIn(dateTime)){
+        for (Task task : taskMap.values()) {
+            if (task.appearsIn(dateTime)) {
                 tasks.add(task);
             }
         }
         return tasks;
+    }
+
+    public Map<LocalDate, ArrayList<Task>> getAllTasksSortedByDate() {
+        Map<LocalDate, ArrayList<Task>> tasksSortedByDate = new TreeMap<>();
+        for (Task task : taskMap.values()){
+            if (tasksSortedByDate.containsKey(task.getDayOfCompletion().toLocalDate())){
+                tasksSortedByDate.get(task.getDayOfCompletion().toLocalDate()).add(task);
+            } else {
+                tasksSortedByDate.put(task.getDayOfCompletion().toLocalDate(), new ArrayList<>());
+                tasksSortedByDate.get(task.getDayOfCompletion().toLocalDate()).add(task);
+            }
+        }
+        return tasksSortedByDate;
+    }
+
+    public ArrayList<Task> getRemovedTasks() {
+        return removedTasks;
     }
 }

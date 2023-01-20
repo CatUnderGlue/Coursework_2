@@ -1,15 +1,14 @@
+import Exceptions.IncorrectArgumentException;
 import Tasks.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
     public static TaskService taskService = new TaskService();
-    public static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -21,13 +20,22 @@ public class Main {
                     int menu = scanner.nextInt();
                     switch (menu) {
                         case 1:
-                            inputTask();
+                            inputTask(scanner);
                             break;
                         case 2:
-                            deleteTask();
+                            deleteTask(scanner);
                             break;
                         case 3:
-                            printAllTasksPerDay();
+                            printAllTasksPerDay(scanner);
+                            break;
+                        case 4:
+                            printAllDeletedTasks();
+                            break;
+                        case 5:
+                            updateTask(scanner);
+                            break;
+                        case 6:
+                            printAllTasksSortedByDate();
                             break;
                         case 0:
                             break label;
@@ -40,46 +48,45 @@ public class Main {
         }
     }
 
-    private static void inputTask() {
+    private static void inputTask(Scanner scanner) {
         try {
             // Получаем данные для создания задачи
-            String title = getTitle();
-            String description = getDescription();
-            int taskType = getTaskType();
+            String title = getTitle(scanner);
+            String description = getDescription(scanner);
+            int taskType = getTaskType(scanner);
             Task.Type type = taskType == 1 ? Task.Type.WORK : Task.Type.PERSONAL;
-            int repeatType = getRepeatType();
-            LocalDateTime dateTime = getDayOfCompletion();
+            int repeatType = getRepeatType(scanner);
+            LocalDateTime dateTime = getDayOfCompletion(scanner);
             // Создаём задачу
             Task task = taskService.createTask(title, description, type, dateTime, repeatType);
             taskService.addTask(task);
             System.out.println("Задача успешно добавлена!");
             System.out.println(task);
-            sc.nextLine();
+            scanner.nextLine();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
     }
 
-    private static void deleteTask() {
-        System.out.print("Введите уникальный номер задачи: ");
-        int id = sc.nextInt();
+    private static void deleteTask(Scanner scanner) {
+        int id = getId(scanner);
         try {
             taskService.removeTask(id);
+            System.out.println("Задача успешно удалена.");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    private static void printAllTasksPerDay() {
+    private static void printAllTasksPerDay(Scanner scanner) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         System.out.print("Введите дату для получения задач в формате 2022-12-31: ");
-        String dayOfCompletion = sc.next();
+        String dayOfCompletion = scanner.next();
         if (!checkDayValidity(dayOfCompletion)) {
-            printAllTasksPerDay();
+            printAllTasksPerDay(scanner);
         }
         LocalDateTime date = LocalDateTime.parse(dayOfCompletion + " 23:59", formatter);
-        List<Task> tasks = taskService.getAllByDate(date);
+        List<Task> tasks = taskService.getAllTasksByDate(date);
         if (tasks.isEmpty()) {
             System.out.println("Задачи на указанный день не найдены.");
         } else {
@@ -89,62 +96,102 @@ public class Main {
         }
     }
 
-    public static String getTitle() {
+    private static void printAllTasksSortedByDate(){
+        Map<LocalDate, ArrayList<Task>> tasks = taskService.getAllTasksSortedByDate();
+        for (LocalDate date : tasks.keySet()){
+            System.out.println("На дату: " + date);
+            for (Task task : tasks.get(date)){
+                System.out.println(task);
+            }
+        }
+    }
+
+    private static void printAllDeletedTasks(){
+        System.out.println("Удалённые задачи:");
+        Task[] tasks = taskService.getRemovedTasks().toArray(new Task[0]);
+        for (Task task : tasks) {
+            System.out.println(task);
+        }
+    }
+
+    private static void updateTask(Scanner scanner){
+        int id = getId(scanner);
+        try {
+            Task task = taskService.getTaskPerId(id);
+            String title = getTitle(scanner);
+            String description = getDescription(scanner);
+            task.setTitle(title);
+            task.setDescription(description);
+            System.out.printf("Задача под номером %d успешно обновлена.\n", id);
+        } catch (IncorrectArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private static String getTitle(Scanner scanner) {
         String title;
+        System.out.print("Введите название задачи: ");
         do {
-            System.out.print("Введите название задачи: ");
-            title = sc.nextLine();
+            title = scanner.nextLine();
         } while (title == null || title.isEmpty() || title.isBlank());
         return title;
     }
-
-    public static String getDescription() {
-        String description;
+    private static int getId(Scanner scanner) {
+        int id;
         do {
-            System.out.print("Введите описание задачи: ");
-            description = sc.nextLine();
+            System.out.print("Введите уникальный номер задачи: ");
+            id = scanner.nextInt();
+        } while (id < 0);
+        return id;
+    }
+
+    private static String getDescription(Scanner scanner) {
+        String description;
+        System.out.print("Введите описание задачи: ");
+        do {
+            description = scanner.nextLine();
         } while (description == null || description.isEmpty() || description.isBlank());
         return description;
     }
 
-    public static int getTaskType() {
+    private static int getTaskType(Scanner scanner) {
         int taskType;
+        System.out.print("Выберите тип задачи 1 - Рабочая, 2 - Личная : ");
         do {
-            System.out.print("Выберите тип задачи 1 - Рабочая, 2 - Личная : ");
-            taskType = sc.nextInt();
+            taskType = scanner.nextInt();
         } while (taskType > 2 || taskType < 1);
         return taskType;
     }
 
-    public static int getRepeatType() {
+    private static int getRepeatType(Scanner scanner) {
         int repeatType;
+        System.out.print("Выберите повторяемость задачи 1 - Одноразовая, 2 - Ежедневная, 3 - Еженедельная, 4 - Ежемесячная, 5 - Ежегодная: ");
         do {
-            System.out.print("Выберите повторяемость задачи 1 - Одноразовая, 2 - Ежедневная, 3 - Еженедельная, 4 - Ежемесячная, 5 - Ежегодная: ");
-            repeatType = sc.nextInt();
+            repeatType = scanner.nextInt();
         } while (repeatType > 5 || repeatType < 1);
         return repeatType;
     }
 
-    public static LocalDateTime getDayOfCompletion() {
-        LocalDate day = getDay();
-        LocalTime time = getTime();
+    private static LocalDateTime getDayOfCompletion(Scanner scanner) {
+        LocalDate day = getDay(scanner);
+        LocalTime time = getTime(scanner);
         return LocalDateTime.of(day, time);
     }
 
-    public static LocalDate getDay() {
+    private static LocalDate getDay(Scanner scanner) {
         String dayOfCompletion;
+        System.out.print("Введите дату выполнения в формате 2022-12-31: ");
         do {
-            System.out.print("Введите дату выполнения в формате 2022-12-31: ");
-            dayOfCompletion = sc.next();
+            dayOfCompletion = scanner.next();
         } while (!checkDayValidity(dayOfCompletion));
         return LocalDate.parse(dayOfCompletion);
     }
 
-    public static LocalTime getTime() {
+    private static LocalTime getTime(Scanner scanner) {
         String timeOfCompletion;
+        System.out.print("Введите время выполнения в формате 23:59: ");
         do {
-            System.out.print("Введите время выполнения в формате 23:59: ");
-            timeOfCompletion = sc.next();
+            timeOfCompletion = scanner.next();
         } while (!checkTimeValidity(timeOfCompletion));
         return LocalTime.parse(timeOfCompletion);
     }
@@ -174,6 +221,8 @@ public class Main {
     }
 
     private static void printMenu() {
-        System.out.println("1. Добавить задачу\n2. Удалить задачу\n3. Получить задачу на указанный день\n0. Выход");
+        System.out.println("1. Добавить задачу\n2. Удалить задачу\n3. Получить задачу на указанный день\n" +
+                "4. Получить все удалённые задачи\n5. Изменить название и описание существующей задачи\n" +
+                "6. Получить все задачи отсортерованные по дате.\n0. Выход");
     }
 }

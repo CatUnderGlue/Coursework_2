@@ -82,12 +82,10 @@ public abstract class Task {
 
     @Override
     public String toString() {
-        return "Id: " + getId() + "\n" +
-                "Задача: " + getTitle() + "\n" +
+        return "Id: " + getId() + " Задача: " + getTitle() + "\n" +
                 "Описание: " + getDescription() + "\n" +
-                "Тип: " + getType() + "\n" +
-                "Дата создания задачи: " + getInitialDateTime() + "\n" +
-                "Время: " + getDayOfCompletion().toLocalTime() + "\n";
+                "Тип: " + getType() + ". Дата создания задачи: " + getInitialDateTime() + "\n" +
+                "Время выполнения: " + getDayOfCompletion().toLocalTime() + "\n";
     }
 
 
