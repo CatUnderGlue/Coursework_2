@@ -1,4 +1,4 @@
-import Exceptions.IncorrectArgumentException;
+import exceptions.IncorrectArgumentException;
 import Tasks.*;
 
 import java.time.LocalDate;
@@ -8,6 +8,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Main {
+    public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
     public static TaskService taskService = new TaskService();
 
     public static void main(String[] args) {
@@ -54,7 +56,7 @@ public class Main {
             String title = getTitle(scanner);
             String description = getDescription(scanner);
             int taskType = getTaskType(scanner);
-            Task.Type type = taskType == 1 ? Task.Type.WORK : Task.Type.PERSONAL;
+            Type type = taskType == 1 ? Type.WORK : Type.PERSONAL;
             int repeatType = getRepeatType(scanner);
             LocalDateTime dateTime = getDayOfCompletion(scanner);
             // Создаём задачу
@@ -79,13 +81,13 @@ public class Main {
     }
 
     private static void printAllTasksPerDay(Scanner scanner) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         System.out.print("Введите дату для получения задач в формате 2022-12-31: ");
         String dayOfCompletion = scanner.next();
         if (!checkDayValidity(dayOfCompletion)) {
             printAllTasksPerDay(scanner);
+            return;
         }
-        LocalDateTime date = LocalDateTime.parse(dayOfCompletion + " 23:59", formatter);
+        LocalDate date = LocalDate.parse(dayOfCompletion, dateFormatter);
         List<Task> tasks = taskService.getAllTasksByDate(date);
         if (tasks.isEmpty()) {
             System.out.println("Задачи на указанный день не найдены.");
@@ -97,7 +99,7 @@ public class Main {
     }
 
     private static void printAllTasksSortedByDate(){
-        Map<LocalDate, ArrayList<Task>> tasks = taskService.getAllTasksSortedByDate();
+        Map<LocalDate, List<Task>> tasks = taskService.getAllTasksSortedByDate();
         for (LocalDate date : tasks.keySet()){
             System.out.println("На дату: " + date);
             for (Task task : tasks.get(date)){
@@ -108,7 +110,7 @@ public class Main {
 
     private static void printAllDeletedTasks(){
         System.out.println("Удалённые задачи:");
-        Task[] tasks = taskService.getRemovedTasks().toArray(new Task[0]);
+        List<Task> tasks = taskService.getRemovedTasks();
         for (Task task : tasks) {
             System.out.println(task);
         }
@@ -197,10 +199,9 @@ public class Main {
     }
 
     private static boolean checkDayValidity(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         boolean flag = false;
         try {
-            LocalDate d = LocalDate.parse(date, formatter);
+            LocalDate d = LocalDate.parse(date, dateFormatter);
             flag = true;
         } catch (Exception e) {
             System.out.println("Некорректный ввод даты! Указывайте дату строго по указанному формату!");
@@ -209,10 +210,10 @@ public class Main {
     }
 
     private static boolean checkTimeValidity(String time) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
         boolean flag = false;
         try {
-            LocalTime t = LocalTime.parse(time, formatter);
+            LocalTime t = LocalTime.parse(time, timeFormatter);
             flag = true;
         } catch (Exception e) {
             System.out.println("Некорректный ввод времени! Указывайте время строго по указанному формату!");

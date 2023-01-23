@@ -1,4 +1,4 @@
-import Exceptions.IncorrectArgumentException;
+import exceptions.IncorrectArgumentException;
 import Tasks.*;
 
 import java.time.LocalDate;
@@ -6,13 +6,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 public class TaskService {
-    private HashMap<Integer, Task> taskMap = new HashMap<>();
-    private ArrayList<Task> removedTasks = new ArrayList<>();
+    private final Map<Integer, Task> taskMap = new HashMap<>();
+    private final List<Task> removedTasks = new ArrayList<>();
 
-    public TaskService() {
-    }
-
-    public Task createTask(String title, String description, Task.Type type, LocalDateTime dateTime, int repeatType) throws IncorrectArgumentException {
+    public Task createTask(String title, String description, Type type, LocalDateTime dateTime, int repeatType) throws IncorrectArgumentException {
         switch (repeatType) {
             case 1:
                 return new OneTimeTask(title, description, type, dateTime);
@@ -25,7 +22,7 @@ public class TaskService {
             case 5:
                 return new YearlyTask(title, description, type, dateTime);
             default:
-                return null;
+                return new OneTimeTask(title, description, type, dateTime);
         }
     }
 
@@ -35,8 +32,7 @@ public class TaskService {
 
     public void removeTask(int id) throws IncorrectArgumentException {
         if (taskMap.containsKey(id)) {
-            removedTasks.add(taskMap.get(id));
-            taskMap.remove(id);
+            removedTasks.add(taskMap.remove(id));
         } else {
             throw new IncorrectArgumentException("Задача под заданным номером отсутствует");
         }
@@ -50,8 +46,8 @@ public class TaskService {
         }
     }
 
-    public ArrayList<Task> getAllTasksByDate(LocalDateTime dateTime) {
-        ArrayList<Task> tasks = new ArrayList<>();
+    public List<Task> getAllTasksByDate(LocalDate dateTime) {
+        List<Task> tasks = new ArrayList<>();
         for (Task task : taskMap.values()) {
             if (task.appearsIn(dateTime)) {
                 tasks.add(task);
@@ -60,20 +56,19 @@ public class TaskService {
         return tasks;
     }
 
-    public Map<LocalDate, ArrayList<Task>> getAllTasksSortedByDate() {
-        Map<LocalDate, ArrayList<Task>> tasksSortedByDate = new TreeMap<>();
-        for (Task task : taskMap.values()){
-            if (tasksSortedByDate.containsKey(task.getDayOfCompletion().toLocalDate())){
-                tasksSortedByDate.get(task.getDayOfCompletion().toLocalDate()).add(task);
-            } else {
+    public Map<LocalDate, List<Task>> getAllTasksSortedByDate() {
+        Map<LocalDate, List<Task>> tasksSortedByDate = new TreeMap<>();
+        for (Task task : taskMap.values()) {
+            if (!tasksSortedByDate.containsKey(task.getDayOfCompletion().toLocalDate())) {
                 tasksSortedByDate.put(task.getDayOfCompletion().toLocalDate(), new ArrayList<>());
-                tasksSortedByDate.get(task.getDayOfCompletion().toLocalDate()).add(task);
             }
+            tasksSortedByDate.get(task.getDayOfCompletion().toLocalDate()).add(task);
         }
         return tasksSortedByDate;
     }
 
-    public ArrayList<Task> getRemovedTasks() {
-        return removedTasks;
+    public List<Task> getRemovedTasks() {
+        List<Task> removedTasksTmp = this.removedTasks;
+        return removedTasksTmp;
     }
 }

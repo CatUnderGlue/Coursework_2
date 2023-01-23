@@ -1,6 +1,6 @@
 package Tasks;
 
-import Exceptions.IncorrectArgumentException;
+import exceptions.IncorrectArgumentException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,8 +12,8 @@ public class DailyTask extends Task implements Repeatable{
     }
 
     @Override
-    public boolean appearsIn(LocalDateTime date) {
-        return getDayOfCompletion().isBefore(date);
+    public boolean appearsIn(LocalDate date) {
+        return getDayOfCompletion().isBefore(date.atStartOfDay());
     }
 
     @Override

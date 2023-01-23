@@ -1,32 +1,19 @@
 package Tasks;
 
-import Exceptions.IncorrectArgumentException;
+import exceptions.IncorrectArgumentException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
 public abstract class Task {
-    public enum Type {
-        WORK("Рабочая"),
-        PERSONAL("Личная");
-        final String translate;
-        Type(String translate){
-            this.translate = translate;
-        }
-
-        @Override
-        public String toString() {
-            return translate;
-        }
-    }
     private static int idGenerator = 0;
     private final int id;
-    private Type type;
+    private final Type type;
     private String title;
     private String description;
     private final String initialDateTime;
-    private LocalDateTime dayOfCompletion;
+    private final LocalDateTime dayOfCompletion;
 
     public Task(String title, String description, Type type, LocalDateTime dayOfCompletion) throws IncorrectArgumentException {
         setTitle(title);
@@ -38,7 +25,7 @@ public abstract class Task {
         idGenerator += 1;
     }
 
-    public abstract boolean appearsIn(LocalDateTime date);
+    public abstract boolean appearsIn(LocalDate date);
 
     public int getId() {
         return id;

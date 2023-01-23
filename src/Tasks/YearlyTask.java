@@ -1,6 +1,6 @@
 package Tasks;
 
-import Exceptions.IncorrectArgumentException;
+import exceptions.IncorrectArgumentException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,8 +12,8 @@ public class YearlyTask extends Task implements Repeatable{
     }
 
     @Override
-    public boolean appearsIn(LocalDateTime date) {
-        if (getDayOfCompletion().isAfter(date)){
+    public boolean appearsIn(LocalDate date) {
+        if (getDayOfCompletion().isAfter(date.atStartOfDay())){
             return false;
         } else {
             return date.getDayOfYear() == getDayOfCompletion().getDayOfYear();
